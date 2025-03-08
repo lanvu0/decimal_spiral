@@ -72,7 +72,6 @@ int find_first_number(int size, int row) {
     int total_count = 0;
     int pattern_count = row / 2;
 
-    // Find first number normally
     if (row % 2 == 0) {
         if (row == 0) {
             for (int i = 2; i < size - row - 2 * pattern_count; i += 2) {
@@ -159,7 +158,7 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
     else if (row >= 2) {
         for (int i = 0; i < start_digit_column_counter; i++) {
 
-            new_start_digit_column += 1;
+            new_start_digit_column ++;
             new_start_digit_column = keep_in_range(new_start_digit_column);
         }
         printf("%d", new_start_digit_column);
@@ -253,10 +252,8 @@ int left_column(int size, int row, int col_shift) {
         printf("-%d", current_num);
         left_char_used += 2;
     }
-return left_char_used;
+    return left_char_used;
 }
-
-
 
 int count_right_pyramid(int size, int row) {
     int right_char_used = 0;
@@ -303,19 +300,16 @@ int fill_gaps(int row, int size, int left_used, int right_used, int first_number
         // Fill gaps for even rows
         for (int j = 0; j < size - total_used; j++)
         {
+            first_number = keep_in_range(first_number);
             printf("%d", first_number);
 
             if (row <= size / 2) {
                 first_number--;
+                first_number = keep_in_range(first_number);
             }
             else {
                 first_number++;
-            }
-            if (first_number == -1) {
-                first_number = 9;
-            }
-            else if (first_number == 10) {
-                first_number = 0;
+                first_number = keep_in_range(first_number);
             }
 
         }
