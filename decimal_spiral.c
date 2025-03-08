@@ -13,6 +13,7 @@ int count_right_pyramid(int, int);
 int fill_gaps(int, int, int, int, int);
 void right_pyramid(int, int, int, int, int, int);
 int keep_in_range(int);
+int left_column(int, int, int);
 
 int main(void) {
 
@@ -71,6 +72,7 @@ int find_first_number(int size, int row) {
     int total_count = 0;
     int pattern_count = row / 2;
 
+    // Find first number normally
     if (row % 2 == 0) {
         if (row == 0) {
             for (int i = 2; i < size - row - 2 * pattern_count; i += 2) {
@@ -95,6 +97,7 @@ int find_first_number(int size, int row) {
         // Return 2nd digit
         total_count = total_count % 10;
     }
+
 
     return total_count;
 }
@@ -140,6 +143,7 @@ int keep_in_range(int num) {
 // Print left pyramid pattenr
 int left_pyramid(int size, int row, int first_number, int start_digit_column, int start_digit_column_counter) {
     int left_char_used = 0;
+    int col = row - 2;
 
     int middle_row = size / 2;
     
@@ -151,7 +155,7 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
         printf("%d", start_digit_column);
         left_char_used += 1;
     }
-    // Print remaining column in incrementing order
+    // Print remaining 1st column in incrementing order
     else if (row >= 2) {
         for (int i = 0; i < start_digit_column_counter; i++) {
 
@@ -167,6 +171,8 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
 
     }
     if (row <= middle_row) {
+        int iteration_count = 1;
+        int col_shift = 2;
         for (int i = 3; i < row; i += 2) {
             first_number = first_number % 10;
 
@@ -176,14 +182,20 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
                 left_char_used += 2;
             }
             else {
-                printf("-*");
-                left_char_used += 2;
+                // Every 2nd iteration of i for loop, move column over by 2
+                if (iteration_count % 2 == 0) {
+                    col_shift += 2;
+                }
+                left_char_used += left_column(size, row, col_shift);
                 
             }
+            iteration_count++;
             
         }
     }
     else {
+        int iteration_count = 1;
+        int col_shift = 2;
         for (int i = size / 2 - 2; i >= row - middle_row; i -= 2) {
             if (first_number - 1 == -1) {
                 first_number = 9;
@@ -192,17 +204,59 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
             // Handle numbers before, maybe focus on pure column descending
 
             // Handles last number printed
+
             if (i <= row - middle_row + 1 && row % 2 == 0) {
                 printf("-%d", first_number - 1);
+                left_char_used += 2;
             }
             else {
-                printf("-*");
+                // Every 2nd iteration of i for loop, move column over by 2
+                if (iteration_count % 2 == 0) {
+                    col_shift += 2;
+                }
+                left_char_used += left_column(size, row, col_shift);
             }
-            left_char_used += 2;
+            iteration_count++;
+
         }
     }
     return left_char_used;
 }
+
+
+int left_column(int size, int row, int col_shift) {
+    int left_char_used = 0;
+    int start_row = 2 + col_shift;
+    // When left_column is called again with new col_shift value
+    // e.g. col_shift == 2
+    // Need to get find_first_number for that respective column as the base
+    
+    // Find first number for each respective column
+    // e.g. return first number for col 2, col 4...
+    // We know col = row - 2 where row % 2 == 0
+    // i.e. row = 2 + col where row % 2 == 0
+    // get the starting row of each column so
+    // we can find starting num with our formula above
+    // using size 15
+    // if col_shift = 0 -> starting row is 2
+    // if col_shift = 2 -> starting row is 4
+
+    if (row >= start_row) {
+        // Formula to find first_number for respective column
+        // e.g. if column 0 then get first_number for col 0 only
+        // then if column 1, then get first_number for col 1 only
+        int start_num = find_first_number(size, start_row);
+
+
+        int offset = row - start_row;
+        int current_num = (start_num + offset) % 10;
+        printf("-%d", current_num);
+        left_char_used += 2;
+    }
+return left_char_used;
+}
+
+
 
 int count_right_pyramid(int size, int row) {
     int right_char_used = 0;
@@ -315,25 +369,3 @@ void right_pyramid(int size, int row, int first_number, int start_digit_column, 
     return;
 }
 
-void right_column() {
-    ;
-}
-/*
-
-
-how to print remaining columns?
-i can print single column but idk how to print 2 columns at the same time
-
-maybe think recusive function?
-
-like column 1 runs twice, then it calls column 2 to run, which passes value into 
-nah too hard
-
-i can print last num for each long sequence
-
-but main job now is to print trickling down sequence of numbers and thats it
-
-
-or can call function for printing "%d-"
-
-*/
