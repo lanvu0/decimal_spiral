@@ -10,10 +10,11 @@ int find_first_number(int, int);
 int find_last_number(int, int, int);
 int left_pyramid(int, int, int, int, int);
 int count_right_pyramid(int, int);
-int fill_gaps(int, int, int, int, int);
+void fill_gaps(int, int, int, int, int);
 void right_pyramid(int, int, int, int, int, int);
 int keep_in_range(int);
 int left_column(int, int, int);
+void right_column(int, int, int);
 
 int main(void) {
 
@@ -21,23 +22,26 @@ int main(void) {
     printf("Enter size: ");
     scanf("%d", &size);
 
-
-    
-
     // How many times column has been iterated through
     int start_digit_column_counter = 0;
 
     // Value of starting digit of column series
     int start_digit_column = 0;
+    int last_digit_column = 0;
 
     for (int row = 0; row < size; row++) {
         // Find starting digit for 1st column, row 2
-        if (row % 2 == 0 && row == 2) {
+        int first_number = find_first_number(size, row);
+        if (row == 0) {
+            last_digit_column = find_last_number(size, row, first_number);
+        }
+        else if (row % 2 == 0 && row == 2) {
             start_digit_column = find_first_number(size, row);
         }
+        
 
-        int last_number;
-        int first_number = find_first_number(size, row);
+        int last_number = 0;
+        
         if (row % 2 == 0) {
             last_number = find_last_number(size, row, first_number);
         }
@@ -59,7 +63,7 @@ int main(void) {
         int right_used = count_right_pyramid(size, row);
         fill_gaps(row, size, left_used, right_used, first_number);
 
-        right_pyramid(size, row, first_number, start_digit_column, start_digit_column_counter, last_number);
+        right_pyramid(size, row, first_number, last_digit_column, start_digit_column_counter, last_number);
         printf("\n");
         start_digit_column_counter++;
     }
@@ -72,6 +76,7 @@ int find_first_number(int size, int row) {
     int total_count = 0;
     int pattern_count = row / 2;
 
+    // Find first number normally
     if (row % 2 == 0) {
         if (row == 0) {
             for (int i = 2; i < size - row - 2 * pattern_count; i += 2) {
@@ -142,13 +147,12 @@ int keep_in_range(int num) {
 // Print left pyramid pattenr
 int left_pyramid(int size, int row, int first_number, int start_digit_column, int start_digit_column_counter) {
     int left_char_used = 0;
-    int col = row - 2;
 
     int middle_row = size / 2;
     
     // Since column series starts at row 2, we - 2
     int new_start_digit_column = start_digit_column - 2;
-
+    
     // Print initial column 1st digit
     if (row == 2) {
         printf("%d", start_digit_column);
@@ -158,7 +162,7 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
     else if (row >= 2) {
         for (int i = 0; i < start_digit_column_counter; i++) {
 
-            new_start_digit_column ++;
+            new_start_digit_column += 1;
             new_start_digit_column = keep_in_range(new_start_digit_column);
         }
         printf("%d", new_start_digit_column);
@@ -169,13 +173,16 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
         // Maybe pass in variable that keeps track of starting digit for each column
 
     }
+    int iteration_count = 1;
+    int col_shift = 2;
+    int iteration_count_1 = 0;
     if (row <= middle_row) {
-        int iteration_count = 1;
-        int col_shift = 2;
         for (int i = 3; i < row; i += 2) {
+
             first_number = first_number % 10;
 
             // On last repeat, print out last digit
+
             if (i >= row - 2 && row % 2 == 0) {
                 printf("-%d", first_number + 1);
                 left_char_used += 2;
@@ -184,17 +191,20 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
                 // Every 2nd iteration of i for loop, move column over by 2
                 if (iteration_count % 2 == 0) {
                     col_shift += 2;
+                    
                 }
                 left_char_used += left_column(size, row, col_shift);
-                
             }
-            iteration_count++;
+            iteration_count+= 2;
+
+            if (iteration_count_1 == 0) {
+                iteration_count--;
+                iteration_count_1 = 1;
+            }
             
         }
     }
     else {
-        int iteration_count = 1;
-        int col_shift = 2;
         for (int i = size / 2 - 2; i >= row - middle_row; i -= 2) {
             if (first_number - 1 == -1) {
                 first_number = 9;
@@ -209,13 +219,18 @@ int left_pyramid(int size, int row, int first_number, int start_digit_column, in
                 left_char_used += 2;
             }
             else {
+
                 // Every 2nd iteration of i for loop, move column over by 2
                 if (iteration_count % 2 == 0) {
                     col_shift += 2;
                 }
                 left_char_used += left_column(size, row, col_shift);
             }
-            iteration_count++;
+            iteration_count += 2;
+            if (iteration_count_1 == 0) {
+                iteration_count--;
+                iteration_count_1 = 1;
+            }
 
         }
     }
@@ -240,12 +255,13 @@ int left_column(int size, int row, int col_shift) {
     // if col_shift = 0 -> starting row is 2
     // if col_shift = 2 -> starting row is 4
 
+    int start_num = find_first_number(size, start_row);
+
+
     if (row >= start_row) {
         // Formula to find first_number for respective column
         // e.g. if column 0 then get first_number for col 0 only
         // then if column 1, then get first_number for col 1 only
-        int start_num = find_first_number(size, start_row);
-
 
         int offset = row - start_row;
         int current_num = (start_num + offset) % 10;
@@ -254,6 +270,10 @@ int left_column(int size, int row, int col_shift) {
     }
     return left_char_used;
 }
+
+
+
+
 
 int count_right_pyramid(int size, int row) {
     int right_char_used = 0;
@@ -283,18 +303,15 @@ int count_right_pyramid(int size, int row) {
 
 // Need fill_gaps to get starting number from find_first_number
 // Then start incrementing/decrementing if <= middlerow or not
-int fill_gaps(int row, int size, int left_used, int right_used, int first_number) {
+void fill_gaps(int row, int size, int left_used, int right_used, int first_number) {
     int total_used = left_used + right_used;
 
-    int first_num;
-    int last_num;
 
     
     if (row % 2 != 0) {
-        for (int j = 0; j < size - total_used; j++)
-            {
-                printf("-");
-            }
+        for (int j = 0; j < size - total_used; j++) {
+            printf("-");
+        }
     }
     else {
         // Fill gaps for even rows
@@ -314,52 +331,116 @@ int fill_gaps(int row, int size, int left_used, int right_used, int first_number
 
         }
     }
-    return first_num;
+    return;
 }
 
-void right_pyramid(int size, int row, int first_number, int start_digit_column, int start_digit_column_counter, int last_number) {
+void right_pyramid(int size, int row, int first_number, int last_digit_column, int start_digit_column_counter, int last_number) {
     int middle_row = size / 2;
     // Since column series starts at row 0
-    int new_start_digit_column = last_number;
 
     // Since column starts at row 1
     // Print last digit of 1st row
     if (row == 0) {
-        printf("%d", last_number);
+        printf("%d", last_digit_column);
     }
 
     // Note: find way to get last digit and decrement
     // Maybe loop pattern to get each column?
 
     // Amount of times right pattern has increased until middle row
+    int iteration_count = 0;
+    int col_shift = 0;
+
+
     if (row <= middle_row) {
         for (int i = 1; i < row; i += 2) {
-            printf("*-");
+            if (iteration_count % 2 == 0) {
+                col_shift += 2;
+            }
+            right_column(size, row, col_shift);
+            iteration_count += 2;
         }
-    }
 
+    }
     else {
         // Print decrementing remaining rows
         for (int i = size / 2 - 2; i >= row - middle_row; i -= 2) {
-            printf("*-");
-            
+            if (iteration_count % 2 == 0) {
+                col_shift += 2;
+            }
+            right_column(size, row, col_shift);
+            iteration_count += 2;
         }
     }
 
     
-
-    // Print remaining column in decrementing order
+    // Print last column in decrementing order
     if (row >= 1) {
-        for (int i = 0; i <= start_digit_column_counter; i++) {
-
-            new_start_digit_column --;
-            if (new_start_digit_column == -1) {
-                new_start_digit_column = 9;
-            }
+        for (int i = 0; i < start_digit_column_counter; i++) {
+            
+            last_digit_column--;
+            last_digit_column = keep_in_range(last_digit_column);
         }
         
-        printf("%d", new_start_digit_column);
+        printf("%d", last_digit_column);
     }
     return;
 }
 
+// Reversed version of left_column function
+void right_column(int size, int row, int col_shift) {
+
+    int iteration_count = 0;
+    // Temp_col_shift represents maximum amount of shifts
+    // We use this to print out large col_shift sequences first
+    int temp_col_shift = 0;
+    int middle_row = size / 2;
+
+    
+    if (row <= middle_row) {
+        for (int i = 1; i < row; i += 2) {
+            if (iteration_count % 2 == 0) {
+                temp_col_shift += 2;
+            }
+            iteration_count += 2;
+        }
+
+    }
+    else {
+        // Print decrementing remaining rows
+        for (int i = size / 2 - 2; i >= row - middle_row; i -= 2) {
+            if (iteration_count % 2 == 0) {
+                temp_col_shift += 2;
+            }
+            iteration_count += 2;
+        }
+    }
+
+
+
+    int start_row = temp_col_shift - col_shift + 2;
+    int first_num = find_first_number(size, start_row);
+
+    if (row >= start_row) {
+        // Formula to find first_number for respective column
+        // e.g. if column 0 then get first_number for col 0 only
+        // then if column 1, then get first_number for col 1 only
+        int start_num = find_last_number(size, start_row, first_num);
+        // printf("|%d, %d|", first_num, start_row);
+        int offset = row - start_row;
+
+        if (row == size / 2 && size % 4 == 1 && size > 5 && start_num == col_shift) {
+            offset += 2;
+        }
+
+        int current_num = start_num;
+        for (int i = 0; i < offset; i ++) {
+            current_num--;
+            current_num = keep_in_range(current_num);
+        }
+        printf("%d-", current_num);
+    }
+
+    
+    return;
+}
